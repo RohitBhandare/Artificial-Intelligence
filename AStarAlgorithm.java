@@ -89,3 +89,111 @@ public class AStar {
         return Math.abs(x1 - x2) + Math.abs(y1 - y2);
     }
 }
+
+/*
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.PriorityQueue;
+
+class Node implements Comparable<Node> {
+    int vertex;
+    int cost;
+    int heuristic; // heuristic value for A*
+
+    Node() {
+
+    }
+
+    public Node(int vertex, int cost, int heuristic) {
+        this.vertex = vertex;
+        this.cost = cost;
+        this.heuristic = heuristic;
+    }
+
+    @Override
+    public String toString() {
+        return "[ " + vertex + ", " + cost + ", " + heuristic + "]";
+    }
+
+    @Override
+    public int compareTo(Node o) {
+        int f1 = cost + heuristic;
+        int f2 = o.cost + o.heuristic;
+        if (f1 < f2)
+            return -1;
+        else if (f1 > f2)
+            return 1;
+        else
+            return 0;
+    }
+}
+
+public class AStar {
+
+    static void shortestPath(int src, ArrayList<ArrayList<Node>> list, int noOfNodes, int dest) {
+        int path[] = new int[noOfNodes];
+        int dis[] = new int[noOfNodes];
+        int heuristic[] = { 4, 2, 4, 0 }; // heuristic values for nodes
+        for (int i = 0; i < noOfNodes; i++) {
+            dis[i] = Integer.MAX_VALUE; // initial infinite value
+            path[i] = -1; // path not determined yet
+        }
+        dis[src] = 0;
+        PriorityQueue<Node> pq = new PriorityQueue<>();
+        pq.add(new Node(src, 0, heuristic[src]));
+        while (!pq.isEmpty()) {
+            Node node = pq.poll();
+            if (node.vertex == dest) {
+                break; // destination node found
+            }
+            for (Node n : list.get(node.vertex)) {
+                int newCost = dis[node.vertex] + n.cost;
+                if (newCost < dis[n.vertex]) {
+                    dis[n.vertex] = newCost;
+                    path[n.vertex] = node.vertex; // update path
+                    pq.add(new Node(n.vertex, newCost, heuristic[n.vertex]));
+                }
+            }
+        }
+
+        int i = 0;
+        for (int a : dis) {
+            System.out.println(src + " --> " + i + " Total Cost is: " + a);
+            i++;
+        }
+
+        i = 0;
+        System.out.print("Shortest Path: ");
+        while (dest != src) {
+            System.out.print(dest + " <-- ");
+            dest = path[dest];
+        }
+        System.out.print(src);
+    }
+
+    public static void main(String[] args) {
+        int noOfNodes = 4;
+        ArrayList<ArrayList<Node>> list = new ArrayList<>();
+        for (int i = 0; i < noOfNodes; i++)
+            list.add(new ArrayList<>());
+        list.get(0).add(new Node(1, 5, 4));
+        list.get(0).add(new Node(2, 1, 4));
+
+        list.get(1).add(new Node(0, 5, 2));
+        list.get(1).add(new Node(3, 2, 0));
+        list.get(1).add(new Node(2, 9, 4));
+
+        list.get(2).add(new Node(0, 8, 2));
+        list.get(2).add(new Node(1, 9, 0));
+        list.get(2).add(new Node(3, 6, 0));
+        
+        list.get(3).add(new Node(1, 2,0));
+        list.get(3).add(new Node(2, 6,0));
+        
+        for (int i = 0; i < noOfNodes; i++) {
+            System.out.println(i + " --> " + list.get(i));
+        }
+        shortestPath(0, list, noOfNodes,3);
+    }
+}
+*/
