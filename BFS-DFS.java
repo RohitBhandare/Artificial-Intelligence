@@ -1,7 +1,9 @@
 package AI_Practicals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 class Node {
@@ -21,21 +23,43 @@ class Node {
 }
 
 class Graph {
-    void BFS(ArrayList<ArrayList<Node>> list, int n, boolean visited[]) {
+    List<Integer> BFS(ArrayList<ArrayList<Node>> list, int n, boolean visited[], List<Integer> bfs, int goalNode) {
         Queue<Integer> queue = new LinkedList<>();
         queue.add(0);
-        System.out.print("BFS: ");
         while (!queue.isEmpty()) {
             int curr = queue.remove();
             if (visited[curr] == false) {
                 visited[curr] = true;
-                System.out.print(" " + curr);
-
+                bfs.add(curr);
+                if (curr == goalNode) {
+                    System.out.println("\n\nGoal State " + curr + " Found !!!!");
+                    break;
+                }
                 for (int i = 0; i < list.get(curr).size(); i++) {
-                    queue.add(list.get(curr).get(i).vertex);
+                    int vertex = list.get(curr).get(i).vertex;
+                    if (!visited[vertex]) {
+                        queue.add(vertex);
+                    }
                 }
             }
+
+            System.out.println();
+            System.out.print("Visited List: [ ");
+            for (int i = 0; i < n; i++) {
+                if (visited[i]) {
+                    System.out.print(i + " ");
+                }
+            }
+            System.out.print("] ");
+
+            System.out.print("\tFringe List: [");
+            for (int vertex : queue) {
+                System.out.print(vertex + " ");
+            }
+            System.out.print("] ");
         }
+        return bfs;
+
     }
 
     void DFS(ArrayList<ArrayList<Node>> list, boolean visited[], int src) {
@@ -82,7 +106,10 @@ public class BFS {
         }
         boolean[] visited = new boolean[noOfNodes];
         Graph graph = new Graph();
-        graph.BFS(list, noOfNodes, visited);
+        List<Integer> bfs = new ArrayList<>();
+        int goalNode = 3;
+        bfs = graph.BFS(list, noOfNodes, visited, bfs, goalNode);
+        System.out.println("\nBFS: " + bfs.toString());
         boolean[] visited1 = new boolean[noOfNodes];
         System.out.println();
         System.out.print("DFS: ");
@@ -91,3 +118,21 @@ public class BFS {
     }
 
 }
+
+/*
+ * OUTPUT
+ * 0 --> [[ 1, 5], [ 2, 8]]
+ * 1 --> [[ 0, 5], [ 3, 2], [ 2, 9]]
+ * 2 --> [[ 0, 8], [ 1, 9], [ 3, 6]]
+ * 3 --> [[ 1, 2], [ 2, 6]]
+ * 
+ * Visited List: [ 0 ] Fringe List: [1 2 ]
+ * Visited List: [ 0 1 ] Fringe List: [2 3 2 ]
+ * Visited List: [ 0 1 2 ] Fringe List: [3 2 3 ]
+ * 
+ * Goal State 3 Found !!!!
+ * 
+ * BFS: [0, 1, 2, 3]
+ * 
+ * DFS: 0 1 3 2
+ */
