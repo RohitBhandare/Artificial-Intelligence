@@ -1,0 +1,360 @@
+package AI_Practicals.EightPuzzle;
+
+import java.util.*;
+
+class Node {
+
+    String[][] puzzle;
+    int level; // level of search tree
+    int heuristicFunctionValue;
+    int n = 3; // size of puzzle
+
+    public Node(String[][] data, int level, int fval) {
+        this.puzzle = data;
+        this.level = level;
+        this.heuristicFunctionValue = fval;
+    }
+
+    public ArrayList<Node> generateChildNodes() {
+        int[] pos = find(puzzle, "_"); // Find the position of the blank space in the puzzle
+        int x = pos[0];
+        int y = pos[1];
+        int[][] valList = { { x, y - 1 }, { x, y + 1 }, { x - 1, y }, { x + 1, y } }; 
+        // Define the four possible moves (up, down, left, right) from the current position of the blank space                                                                              
+        ArrayList<Node> children = new ArrayList<Node>(); // ArrayList to store the resulting child nodes
+        for (int[] i : valList) { // each possible move from the current position of the blank space
+            String[][] childData = swap(puzzle, x, y, i[0], i[1]); 
+            // new puzzle configuration by moving the blank space to the adjacent tile
+            if (childData != null) {
+                // If the resulting configuration is valid (not null), create a new child node
+                // and add it to the list of children
+                Node childNode = new Node(childData, level + 1, 0);
+                children.add(childNode);
+            }
+        }
+        return children;
+    }
+
+    public String[][] swap(String[][] puzzle, int x1, int y1, int x2, int y2) {
+        if (x2 >= 0 && x2 < puzzle.length && y2 >= 0 && y2 < puzzle.length) { 
+            // Check if the new position (x2, y2) is within the bounds of the puzzle
+            String[][] tempPuzzle = copy(puzzle); // Create a copy of the puzzle to modify
+            String temp = tempPuzzle[x2][y2];
+            tempPuzzle[x2][y2] = tempPuzzle[x1][y1]; // Swap the values of the two positions (x1, y1) and (x2, y2)
+            tempPuzzle[x1][y1] = temp;
+            return tempPuzzle; // Return the modified puzzle
+        } else
+            return null; // If the new position is out of bounds, return null
+    }
+
+    public String[][] copy(String[][] root) {
+        String[][] temp = new String[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                temp[i][j] = root[i][j];
+            }
+        }
+        return temp;
+    }
+
+    public int[] find(String[][] puz, String x) { // to find position of empty tile
+        int[] pos = new int[2];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (puz[i][j].equals(x)) {
+                    pos[0] = i;
+                    pos[1] = j;
+                    return pos;
+                }
+            }
+        }
+        return null;
+    }
+}
+
+public class EightPuzzle1 {
+    int n;
+
+    // The open list stores nodes that have been discovered but not yet explored.
+    ArrayList<Node> openList = new ArrayList<>();
+    ArrayList<Node> closedList = new ArrayList<>(); 
+    //The closed list stores nodes that have already been explored and should not be revisited.
+                                                    
+    public EightPuzzle1(int size) {
+        this.n = size;
+    }
+
+    public String[][] getPuzzle() {
+        String[][] puz = new String[n][n];
+        Scanner sc = new Scanner(System.in);
+        for (int i = 0; i < n; i++) {
+            String[] temp = sc.nextLine().split(" ");
+            for (int j = 0; j < n; j++) {
+                puz[i][j] = temp[j];
+            }
+        }
+        return puz;
+    }
+
+    public int heuristicFunction(Node start, String[][] goal) {
+        /* Heuristic Function to calculate heuristic value f(x) = h(x) + g(x) */
+        return this.heuristic(start.puzzle, goal) + start.level;
+    }
+
+    public int heuristic(String[][] start, String[][] goal) {
+        int temp = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (!start[i][j].equals(goal[i][j]) && !start[i][j].equals("_")) {
+                    temp += 1;
+                }
+            }
+        }
+        return temp;
+    }
+
+    public void solve() {
+        /* Accept Start and Goal Puzzle state */
+        System.out.println("Enter the start state matrix: ");
+        String[][] startState = this.getPuzzle();
+        System.out.println("Enter the goal state matrix: ");
+        String[][] goalState = this.getPuzzle();
+        Node startNode = new Node(startState, 0, 0);
+        startNode.heuristicFunctionValue = this.heuristicFunction(startNode, goalState);
+        this.openList.add(startNode); /* Put the start node in the open list */
+        System.out.println("\n\n");
+        int level = 0;
+
+        while (true) {
+            // Get the node with the lowest heuristic function value from the open list
+            Node cur = this.openList.get(0);
+            // Print out the current puzzle state
+            System.out.println("");
+            System.out.println("  | ");
+            System.out.println("  | ");
+            System.out.println(" \\\'/ \n");
+            for (String[] i : cur.puzzle) {
+                for (String j : i) {
+                    System.out.print(j + "  ");
+                }
+                System.out.println("");
+            }
+            System.out.println("Huristic Value: " + this.heuristicFunction(cur, goalState));
+            // Check if the current node is the goal state
+            if (this.heuristic(cur.puzzle, goalState) == 0) {
+                System.out.println("Goal State Found!!!!");
+                break;
+            }
+            System.out.println("\nChild nodes:");
+            // Generate child nodes of the current node and add them to the open list
+            for (Node node : cur.generateChildNodes()) {
+                node.heuristicFunctionValue = this.heuristicFunction(node, goalState);
+                for (String[] i : node.puzzle) { // to print all child
+                    for (String j : i) {
+                        System.out.print(j + "  ");
+                    }
+                    System.out.println();
+                }
+                System.out.println("Heuristic Value: " + this.heuristicFunction(node, goalState));
+                System.out.println();
+                this.openList.add(node);
+            }
+            this.closedList.add(cur);
+            // Move the current node from the open list to the closed list
+            this.openList.remove(0);
+            // Sort the open list based on the heuristic function value of the nodes
+            Collections.sort(this.openList, (a, b) -> a.heuristicFunctionValue - b.heuristicFunctionValue);
+            level++;
+            if (level == 40) {
+                System.out.println("Solution not found!!! ");
+                break;
+            }
+        }
+
+    }
+
+    public static void main(String[] args) {
+        EightPuzzle1 puz = new EightPuzzle1(3);
+        puz.solve();
+    }
+}
+
+/*
+ * Enter the start state matrix:
+ * 2 8 3
+ * 1 6 4
+ * 7 _ 5
+ * Enter the goal state matrix:
+ * 1 2 3
+ * 8 _ 4
+ * 7 6 5
+ * 
+ * 
+ * |
+ * |
+ * \'/
+ * 
+ * 2 8 3
+ * 1 6 4
+ * 7 _ 5
+ * Huristic Value: 4
+ * 
+ * Child nodes:
+ * 2 8 3
+ * 1 6 4
+ * _ 7 5
+ * Heuristic Value: 6
+ * 
+ * 2 8 3
+ * 1 6 4
+ * 7 5 _
+ * Heuristic Value: 6
+ * 
+ * 2 8 3
+ * 1 _ 4
+ * 7 6 5
+ * Heuristic Value: 4
+ * 
+ * 
+ * |
+ * |
+ * \'/
+ * 
+ * 2 8 3
+ * 1 _ 4
+ * 7 6 5
+ * Huristic Value: 4
+ * 
+ * Child nodes:
+ * 2 8 3
+ * _ 1 4
+ * 7 6 5
+ * Heuristic Value: 5
+ * 
+ * 2 8 3
+ * 1 4 _
+ * 7 6 5
+ * Heuristic Value: 6
+ * 
+ * 2 _ 3
+ * 1 8 4
+ * 7 6 5
+ * Heuristic Value: 5
+ * 
+ * 2 8 3
+ * 1 6 4
+ * 7 _ 5
+ * Heuristic Value: 6
+ * 
+ * 
+ * |
+ * |
+ * \'/
+ * 
+ * 2 8 3
+ * _ 1 4
+ * 7 6 5
+ * Huristic Value: 5
+ * 
+ * Child nodes:
+ * 2 8 3
+ * 1 _ 4
+ * 7 6 5
+ * Heuristic Value: 6
+ * 
+ * _ 8 3
+ * 2 1 4
+ * 7 6 5
+ * Heuristic Value: 6
+ * 
+ * 2 8 3
+ * 7 1 4
+ * _ 6 5
+ * Heuristic Value: 7
+ * 
+ * 
+ * |
+ * |
+ * \'/
+ * 
+ * 2 _ 3
+ * 1 8 4
+ * 7 6 5
+ * Huristic Value: 5
+ * 
+ * Child nodes:
+ * _ 2 3
+ * 1 8 4
+ * 7 6 5
+ * Heuristic Value: 5
+ * 
+ * 2 3 _
+ * 1 8 4
+ * 7 6 5
+ * Heuristic Value: 7
+ * 
+ * 2 8 3
+ * 1 _ 4
+ * 7 6 5
+ * Heuristic Value: 6
+ * 
+ * 
+ * |
+ * |
+ * \'/
+ * 
+ * _ 2 3
+ * 1 8 4
+ * 7 6 5
+ * Huristic Value: 5
+ * 
+ * Child nodes:
+ * 2 _ 3
+ * 1 8 4
+ * 7 6 5
+ * Heuristic Value: 7
+ * 
+ * 1 2 3
+ * _ 8 4
+ * 7 6 5
+ * Heuristic Value: 5
+ * 
+ * 
+ * |
+ * |
+ * \'/
+ * 
+ * 1 2 3
+ * _ 8 4
+ * 7 6 5
+ * Huristic Value: 5
+ * 
+ * Child nodes:
+ * 1 2 3
+ * 8 _ 4
+ * 7 6 5
+ * Heuristic Value: 5
+ * 
+ * _ 2 3
+ * 1 8 4
+ * 7 6 5
+ * Heuristic Value: 7
+ * 
+ * 1 2 3
+ * 7 8 4
+ * _ 6 5
+ * Heuristic Value: 7
+ * 
+ * 
+ * |
+ * |
+ * \'/
+ * 
+ * 1 2 3
+ * 8 _ 4
+ * 7 6 5
+ * Huristic Value: 5
+ * 
+ * Goal State Found!!!!
+ * 
+ */
